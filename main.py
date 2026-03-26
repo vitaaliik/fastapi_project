@@ -1,8 +1,34 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello bro"}
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
+
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "title": "Трускавець",
+            "description": (
+                "Трускавець — відоме курортне місто України, "
+                "яке славиться мінеральними водами, санаторіями "
+                "та спокійним відпочинком."
+            ),
+        },
+    )
+
+
+@app.get("/api/info")
+def get_info():
+    return {
+        "city": "Трускавець",
+        "type": "курортне місто",
+        "famous_for": ["мінеральні води", "санаторії", "відпочинок"],
+    }
